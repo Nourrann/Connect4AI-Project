@@ -16,7 +16,6 @@ def printBoard(board):
 
 def dropPiece(board, row, col, piece):
     board[row][col] = piece
-
 # #check if the cell in last row in a specif col is empty to drop a piece
 # def isEmpty(board, col):
 #     return board[RowsNum-1][col] == 0
@@ -28,6 +27,29 @@ def getTheDeeppestEmptyRow(board, col):
             return i
     return -1
 
+def palyerScore(board, peice):
+    #check horizontal winning
+    for i in range(RowsNum):
+        for j in range(ColsNum-3):
+            if board[i][j] == piece and board[i][j+1] == piece and board[i][j+2] == piece and board[i][j+3] == piece:
+                return True
+    #check vertical winning
+    for i in range(RowsNum-3):
+        for j in range(ColsNum):
+            if board[i][j] == piece and board[i+1][j] == piece and board[i+2][j] == piece and board[i+3][j] == piece:
+                return True
+
+    # check negative diagonal winning
+    for i in range(RowsNum-3):
+        for j in range(ColsNum - 3):
+            if board[i][j] == piece and board[i + 1][j-1] == piece and board[i + 2][j-2] == piece and board[i + 3][j-3] == piece:
+                return True
+
+        # check positive diagonal winning
+        for i in range(RowsNum - 3):
+            for j in range(ColsNum - 3):
+                if board[i][j] == piece and board[i + 1][j + 1] == piece and board[i + 2][j + 2] == piece and board[i + 3][j + 3] == piece:
+                    return True
 
 
 flag = True
@@ -42,6 +64,9 @@ while(flag):
         piece = 1
         if row != -1:
             dropPiece(tempBoard, row, col-1, piece)
+            if palyerScore(board, piece):
+                print("Playe 1 wins!!")
+                flag = False
         else:
             print("Select another col!")
         board = tempBoard
@@ -54,6 +79,9 @@ while(flag):
         piece = 2
         if row != -1:
             dropPiece(tempBoard, row, col - 1, piece)
+            if palyerScore(board, piece):
+                print("Playe 2 wins!!")
+                flag = False
         else:
             print("Select another col!")
         board = tempBoard
@@ -63,9 +91,4 @@ while(flag):
         turn = 1
 
 
-        #flag = False
     #if(turn == 0):
-
-
-
-
