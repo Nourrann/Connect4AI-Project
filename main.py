@@ -1,3 +1,9 @@
+# Nouran Ahmed Abdelaziz 20200609
+# Mariam Hany Gamal      20200532
+# Fatma Salah Mahmoud    20200376
+# Nada Ashraf Mahmoud    20200587
+# Ziyad Ashraf Azab      20200197
+
 from tkinter import *
 import numpy as np
 import random
@@ -5,10 +11,13 @@ import pygame
 import sys
 import math
 
-BLUE = (0, 0, 255)
-BLACK = (0, 0, 0)
+
+# The colors of pygame gui (the board)
+BLUE = (50, 0, 255)
+WHITE = (255, 240, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+GREEN = (255, 100, 0)
 
 rowNum = 6
 colNum = 7
@@ -53,15 +62,18 @@ def runRegular():
             pygame.display.update()
         # Ask for agent 1 Input
         if turn == agent:
-            col,scorer = minimax(board, 3, True)
-
-            if isValidCol(board, col):
+            col,scorer = minimax(board, 3, -math.inf, math.inf,  True)
+            if BoardFull(board):
+               label = myfont.render("DRAW GAME", 1,GREEN)
+               screen.blit(label, (40, 10))
+               game_over = True
+            elif isValidCol(board, col):
                 pygame.time.wait(700)
                 row = findDeepestRow(board, col)
                 placeTiles(board, row, col, agentmark)
 
                 if isWinning(board, agentmark):
-                    label = myfont.render("agent 1 wins!!", 1, RED)
+                    label = myfont.render("AGENT 1 WINS", 1, RED)
                     screen.blit(label, (40, 10))
                     game_over = True
 
@@ -73,15 +85,20 @@ def runRegular():
 
         # Ask for agent 2 Input
         if turn == AI and not game_over:
-            col,scorer = minimax(board, 5, True)
-
-            if isValidCol(board, col):
+            col,scorer = minimax(board, 5, -math.inf, math.inf, True)
+            if BoardFull(board):
+                label = myfont.render("DRAW GAME", 1, GREEN)
+                screen.blit(label, (40, 10))
+                game_over = True
+                printBoard(board)
+                draw_board(board)
+            elif isValidCol(board, col):
                 pygame.time.wait(700)
                 row = findDeepestRow(board, col)
                 placeTiles(board, row, col, AImark)
 
                 if isWinning(board, AImark):
-                    label = myfont.render("agent 2 wins!!", 1, YELLOW)
+                    label = myfont.render("AGENT 2 WINS", 1, YELLOW)
                     screen.blit(label, (40, 10))
                     game_over = True
 
@@ -114,14 +131,18 @@ def runEasy():
                 sys.exit()
             pygame.display.update()
         if turn == agent:
-            col = pick_best_move(board, agentmark)
-            if isValidCol(board, col):
+            col = random.randint(0, 6)
+            if BoardFull(board):
+               label = myfont.render("DRAW GAME", 1,GREEN)
+               screen.blit(label, (40, 10))
+               game_over = True
+            elif isValidCol(board, col):
                 pygame.time.wait(700)
                 row = findDeepestRow(board, col)
                 placeTiles(board, row, col, agentmark)
 
                 if isWinning(board, agentmark):
-                    label = myfont.render("agent 1 wins!!", 1, RED)
+                    label = myfont.render("AGENT 1 WINS", 1, RED)
                     screen.blit(label, (40, 10))
                     game_over = True
 
@@ -133,14 +154,18 @@ def runEasy():
 
         # Ask for agent 2 Input
         if turn == AI and not game_over:
-            col,scorer = minimax(board, 4, True)
-            if isValidCol(board, col):
+            col,scorer = minimax(board, 4, -math.inf, math.inf,  True)
+            if BoardFull(board):
+               label = myfont.render("DRAW GAME", 1,GREEN)
+               screen.blit(label, (40, 10))
+               game_over = True
+            elif isValidCol(board, col):
                 pygame.time.wait(700)
                 row = findDeepestRow(board, col)
                 placeTiles(board, row, col, AImark)
 
                 if isWinning(board, AImark):
-                    label = myfont.render("agent 2 wins!!", 1, YELLOW)
+                    label = myfont.render("AGENT 2 WINS", 1, YELLOW)
                     screen.blit(label, (40, 10))
                     game_over = True
 
@@ -151,6 +176,7 @@ def runEasy():
                 turn = turn % 2
 
         if game_over:
+
             pygame.time.wait(3000)
 
 
@@ -171,6 +197,13 @@ button1.pack()
 button2.pack()
 
 
+
+def BoardFull(board):
+    for i in range(rowNum):
+        for j in range(colNum):
+            if board[i][j] == EMPTY:
+                return False
+    return True
 def generateBoard():
     board = np.zeros((rowNum, colNum))
     return board
@@ -231,25 +264,24 @@ def calculateScore(window, mark):
     if window.count(mark) == 4:
         score += 100
     elif window.count(mark) == 3 and window.count(EMPTY) == 1:
-        score += 5
+        score += 10
     elif window.count(mark) == 2 and window.count(EMPTY) == 2:
         score += 2
 
     if window.count(ai_piece) == 3 and window.count(EMPTY) == 1:
-        score -= 100
-    elif window.count(ai_piece) == 2 and window.count(EMPTY) == 2:
-        score -= 5
+        score -= 80
+    # elif window.count(ai_piece) == 2 and window.count(EMPTY) == 2:
+    #     score -= 5
     return score
 
 
 def score_position(board, mark):
     score = 0
-
     center_array = []
     for i in list(board[:, colNum // 2]):
         center_array.append(int(i))
 
-    score += center_array.count(mark) * 3
+    #score += center_array.count(mark) * 3
 
     ## Score Horizontal
     for r in range(rowNum):
@@ -283,7 +315,6 @@ def score_position(board, mark):
 def is_terminal_node(board):
     return isWinning(board, agentmark) or isWinning(board, AImark) or len(eachValidColumn(board)) == 0
 
-
 def eachValidColumn(board):
     valid_locations = []
     for col in range(colNum):
@@ -299,20 +330,21 @@ def getOpponent(player):
         return agent
 
 
-def minimax(board, depth, maximizingPlayer):
+#                minimax using alpha beta
+def minimax(board, depth, alpha, beta, maximizingPlayer):
     validCols = eachValidColumn(board)
     if depth == 0 or is_terminal_node(board):
         if is_terminal_node(board):
             if isWinning(board, AImark):
-               return None, 100000000000000
-            elif is_terminal_node(board) :
-              if isWinning(board, agentmark):
-               return None, -10000000000000
-            else :
-             return None, 0
+                return None, 100000000000000
+            elif is_terminal_node(board):
+                if isWinning(board, agentmark):
+                    return None, -10000000000000
+            else:
+                return None, 0
         else:
             return None, score_position(board, AImark)
-
+ 
     if maximizingPlayer:
         bestScore = -math.inf
         colNum = random.choice(validCols)
@@ -320,10 +352,13 @@ def minimax(board, depth, maximizingPlayer):
             row = findDeepestRow(board, col)
             tempBoard = board.copy()
             tempBoard[row][col] = AImark
-            score = minimax(tempBoard, depth - 1, False)[1]
+            score = minimax(tempBoard, depth - 1, alpha, beta, False)[1]
             if score > bestScore:
                 bestScore = score
                 colNum = col
+            alpha = max(alpha, bestScore)
+            if beta <= alpha:
+                break
         return colNum, bestScore
     else:
         bestScore = math.inf
@@ -332,11 +367,56 @@ def minimax(board, depth, maximizingPlayer):
             row = findDeepestRow(board, col)
             tempBoard = board.copy()
             tempBoard[row][col] = agentmark
-            score = minimax(tempBoard, depth - 1, True)[1]
+            score = minimax(tempBoard, depth - 1, alpha, beta, True)[1]
             if score < bestScore:
                 bestScore = score
                 colNum = col
+            beta = min(beta, bestScore)
+            if beta <= alpha:
+                break
         return colNum, bestScore
+
+
+
+#                    minimax
+# def minimax(board, depth, maximizingPlayer):
+#     validCols = eachValidColumn(board)
+#     if depth == 0 or is_terminal_node(board):
+#         if is_terminal_node(board):
+#             if isWinning(board, AImark):
+#                return None, 100000000000000
+#             elif is_terminal_node(board) :
+#               if isWinning(board, agentmark):
+#                return None, -10000000000000
+#             else :
+#              return None, 0
+#         else:
+#             return None, score_position(board, AImark)
+
+#     if maximizingPlayer:
+#         bestScore = -math.inf
+#         colNum = random.choice(validCols)
+#         for col in validCols:
+#             row = findDeepestRow(board, col)
+#             tempBoard = board.copy()
+#             tempBoard[row][col] = AImark
+#             score = minimax(tempBoard, depth - 1, False)[1]
+#             if score > bestScore:
+#                 bestScore = score
+#                 colNum = col
+#         return colNum, bestScore
+#     else:
+#         bestScore = math.inf
+#         colNum = random.choice(validCols)
+#         for col in validCols:
+#             row = findDeepestRow(board, col)
+#             tempBoard = board.copy()
+#             tempBoard[row][col] = agentmark
+#             score = minimax(tempBoard, depth - 1, True)[1]
+#             if score < bestScore:
+#                 bestScore = score
+#                 colNum = col
+#         return colNum, bestScore
 
 
 def draw_board(board):
@@ -349,7 +429,7 @@ def draw_board(board):
             )
             pygame.draw.circle(
                 screen,
-                BLACK,
+                WHITE,
                 (
                     int(c * SQUARESIZE + SQUARESIZE / 2),
                     int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2),
