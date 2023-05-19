@@ -11,6 +11,7 @@ import pygame
 import sys
 import math
 import copy
+from timeit import default_timer as timer
 
 # The colors of pygame gui (the board)
 BLUE = (50, 0, 255)
@@ -51,6 +52,7 @@ def runDifficultMinimax():
     printBoard(board)
     game_over = False  # to stop the game after winning
 
+    start = timer() 
     pygame.init()
 
     draw_board(board)
@@ -69,7 +71,7 @@ def runDifficultMinimax():
             pygame.display.update()
         # if it's the computer turn to play (using minimax algorithm)
         if turn == COMPUTER:
-            col, scorer = minimax(board, 2, True)
+            col, scorer = minimax(board, 3, True)
             # if the board is full and no one wins
             if BoardFull(board):
                 label = myfont.render("DRAW GAME", 1, GREEN)
@@ -99,7 +101,7 @@ def runDifficultMinimax():
         # if it's the AI_AGENT turn to play (using minimax algorithm)
         elif turn == AI_AGENT and not game_over:
             # depth is 5, more than the depth in the Computer turn to prioritize its winning
-            col, scorer = minimax(board, 5, True)
+            col, scorer = minimax(board, 4, True)
             # if the board is full and no one wins
             if BoardFull(board):
                 label = myfont.render("DRAW GAME", 1, GREEN)
@@ -128,6 +130,9 @@ def runDifficultMinimax():
 
         if game_over:
             pygame.time.wait(3000)
+    end = timer()
+    time_taken = end - start                
+    print("Difficult Minimax performance: ", time_taken)
 
 
 
@@ -137,6 +142,7 @@ def runEasyMinimax():
     printBoard(board)
     game_over = False
 
+    start = timer() 
     pygame.init()
     draw_board(board)
     pygame.display.update()
@@ -203,9 +209,12 @@ def runEasyMinimax():
                 draw_board(board)
 
                 turn = COMPUTER
-
+        
         if game_over:
             pygame.time.wait(3000)
+    end = timer()
+    time_taken = end - start                
+    print("Easy Minimax performance: ", time_taken)
 
 # function to be called when press the easy alpha-beta minimax button in gui
 def runEasyAlphaBetaMinimax():
@@ -213,6 +222,7 @@ def runEasyAlphaBetaMinimax():
     printBoard(board)
     game_over = False
 
+    start = timer() 
     pygame.init()
     draw_board(board)
     pygame.display.update()
@@ -282,6 +292,9 @@ def runEasyAlphaBetaMinimax():
 
         if game_over:
             pygame.time.wait(3000)
+    end = timer()
+    time_taken = end - start                
+    print("Easy Minimax using alpha beta performance: ", time_taken)
 
 # function to be called when press the difficult alpha-beta minimax button in gui
 def runDifficultAlphaBetaMinimax():
@@ -289,6 +302,7 @@ def runDifficultAlphaBetaMinimax():
     printBoard(board)
     game_over = False  # to stop the game after winning
 
+    start = timer() 
     pygame.init()
 
     draw_board(board)
@@ -366,6 +380,10 @@ def runDifficultAlphaBetaMinimax():
 
         if game_over:
             pygame.time.wait(3000)
+    end = timer()
+    time_taken = end - start                
+    print("Difficult Minimax using alpha beta performance: ", time_taken)
+
 
 # Function to determine the buttons selection
 def determine_selection(p,t):
@@ -442,6 +460,8 @@ def first_window():
     alphaBeta_button = Button(button_border2, text="Alpha-Beta", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command=lambda p = "alpha-beta": second_window(p))
     alphaBeta_button.pack()
 first_window()
+
+
 
 # boolean function to loop over the board and check if it's full or not
 def BoardFull(board):
@@ -551,7 +571,7 @@ def calculateScore(window, mark):
     # of the player has one move left to win, we maximize his score to put the forth piece
     # in this window to win
     elif window.count(mark) == 3 and window.count(EMPTY) == 1:
-        score += 30
+        score += 20
     elif window.count(mark) == 2 and window.count(EMPTY) == 2:
         score += 5
 
@@ -705,6 +725,7 @@ def minimax(board, depth, maximizingPlayer):
             if score < bestScore:
                 bestScore = score
                 colNum = col
+
         return colNum, bestScore
 
 
