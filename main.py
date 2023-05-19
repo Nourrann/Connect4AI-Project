@@ -45,8 +45,8 @@ RADIUS = int(EACH_PIECE_SIZE / 2 - 5)
 screen = pygame.display.set_mode(size)
 
 
-# function to be called when press the regular button in gui
-def runRegular():
+# function to be called when press the difficult minimax button in gui
+def runDifficultMinimax():
     board = generateBoard()
     printBoard(board)
     game_over = False  # to stop the game after winning
@@ -69,7 +69,7 @@ def runRegular():
             pygame.display.update()
         # if it's the computer turn to play (using minimax algorithm)
         if turn == COMPUTER:
-            col, scorer = minimaxAlphaBeta(board, 2, -math.inf, math.inf, True)
+            col, scorer = minimax(board, 2, True)
             # if the board is full and no one wins
             if BoardFull(board):
                 label = myfont.render("DRAW GAME", 1, GREEN)
@@ -99,7 +99,7 @@ def runRegular():
         # if it's the AI_AGENT turn to play (using minimax algorithm)
         elif turn == AI_AGENT and not game_over:
             # depth is 5, more than the depth in the Computer turn to prioritize its winning
-            col, scorer = minimaxAlphaBeta(board, 5, -math.inf, math.inf, True)
+            col, scorer = minimax(board, 5, True)
             # if the board is full and no one wins
             if BoardFull(board):
                 label = myfont.render("DRAW GAME", 1, GREEN)
@@ -131,8 +131,8 @@ def runRegular():
 
 
 
-# function to be called when press the easy button in gui
-def runEasy():
+# function to be called when press the easy minimax button in gui
+def runEasyMinimax():
     board = generateBoard()
     printBoard(board)
     game_over = False
@@ -181,7 +181,7 @@ def runEasy():
         elif turn == AI_AGENT and not game_over:
             # the ai_agent plays using minimax algorithm because AI agent is more intelligent
             # than the computer
-            col, scorer = minimaxAlphaBeta(board, 4, -math.inf, math.inf, True)
+            col, scorer = minimax(board, 4, True)
             #if the board is full with pieces and no one has won yet
             if BoardFull(board):
                 label = myfont.render("DRAW GAME", 1, GREEN)
@@ -207,24 +207,241 @@ def runEasy():
         if game_over:
             pygame.time.wait(3000)
 
+# function to be called when press the easy alpha-beta minimax button in gui
+def runEasyAlphaBetaMinimax():
+    board = generateBoard()
+    printBoard(board)
+    game_over = False
+
+    pygame.init()
+    draw_board(board)
+    pygame.display.update()
+
+    myfont = pygame.font.SysFont("monospace", 75)
+
+    # to start the game randomly by any player
+    turn = random.randint(COMPUTER, AI_AGENT)
+
+    # while still no one wins
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            pygame.display.update()
+
+        # if it's the computer turn to play
+        if turn == COMPUTER:
+            # we choose a random column to play a red piece in
+            col = random.randint(0, 6)
+            if BoardFull(board):
+                label = myfont.render("DRAW GAME", 1, GREEN)
+                screen.blit(label, (40, 10))
+                game_over = True
+            # if the random column is valid, we find the deepest availabe row to place a piece in
+            elif isValidCol(board, col):
+                pygame.time.wait(700)
+                row = findDeepestRow(board, col)
+                placeTiles(board, row, col, COMPUTER_MARK)
+
+                #if the computer wins (by randomly choosing any col to play in)
+                if isWinning(board, COMPUTER_MARK):
+                    label = myfont.render("AGENT 1 WINS", 1, RED)
+                    screen.blit(label, (40, 10))
+                    game_over = True
+                turn = AI_AGENT
+
+                printBoard(board)
+                draw_board(board)
+
+        # if it's the ai_agent's turn to play
+        elif turn == AI_AGENT and not game_over:
+            # the ai_agent plays using alpha-beta minimax algorithm because AI agent is more intelligent
+            # than the computer
+            col, scorer = minimaxAlphaBeta(board, 4,-math.inf, math.inf, True)
+            #if the board is full with pieces and no one has won yet
+            if BoardFull(board):
+                label = myfont.render("DRAW GAME", 1, GREEN)
+                screen.blit(label, (40, 10))
+                game_over = True
+            # if the col the minimax returned is valid, we place a piece in its deepest row
+            elif isValidCol(board, col):
+                pygame.time.wait(700)
+                row = findDeepestRow(board, col)
+                placeTiles(board, row, col, AI_MARK)
+
+                # check if the ai_agent wins after placing the piece
+                if isWinning(board, AI_MARK):
+                    label = myfont.render("AGENT 2 WINS", 1, YELLOW)
+                    screen.blit(label, (40, 10))
+                    game_over = True
+
+                printBoard(board)
+                draw_board(board)
+
+                turn = COMPUTER
+
+        if game_over:
+            pygame.time.wait(3000)
+
+# function to be called when press the difficult alpha-beta minimax button in gui
+def runDifficultAlphaBetaMinimax():
+    board = generateBoard()
+    printBoard(board)
+    game_over = False  # to stop the game after winning
+
+    pygame.init()
+
+    draw_board(board)
+    pygame.display.update()
+
+    myfont = pygame.font.SysFont("monospace", 75)
+
+    # to start the game randomly by any player
+    turn = random.randint(COMPUTER, AI_AGENT)
+
+    # while still no one wins
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            pygame.display.update()
+        # if it's the computer turn to play (using minimax algorithm)
+        if turn == COMPUTER:
+            col, scorer = minimax(board, 2, True)
+            # if the board is full and no one wins
+            if BoardFull(board):
+                label = myfont.render("DRAW GAME", 1, GREEN)
+                screen.blit(label, (40, 10))
+                game_over = True  # to stop the game
+            # check if it's a valid column to place a piece inside its deepest row
+            # by using the column that minimax algorithm returned (the best col to place a piece in it)
+            elif isValidCol(board, col):
+                pygame.time.wait(700)
+                row = findDeepestRow(board, col)
+                placeTiles(board, row, col, COMPUTER_MARK)
+
+                # after placing the piece we check if the computer win or not
+                # and our priority to make the computer loses and the agent wins
+                if isWinning(board, COMPUTER_MARK):
+                    label = myfont.render("AGENT 1 WINS", 1, RED)
+                    screen.blit(label, (40, 10))
+                    game_over = True # to stop the game
+
+                # each time we place a piece we print the board to check if it places it in the board correctly
+                printBoard(board)
+                draw_board(board)
+
+                # to change turns between computer and AI agent
+                turn = AI_AGENT
+
+        # if it's the AI_AGENT turn to play (using alpha-beta minimax algorithm)
+        elif turn == AI_AGENT and not game_over:
+            # depth is 5, more than the depth in the Computer turn to prioritize its winning
+            col, scorer = minimaxAlphaBeta(board, 5, -math.inf, math.inf, True)
+            # if the board is full and no one wins
+            if BoardFull(board):
+                label = myfont.render("DRAW GAME", 1, GREEN)
+                screen.blit(label, (40, 10))
+                game_over = True # to stop the game
+                printBoard(board)
+                draw_board(board)
+            # check if it's a valid column to place a piece inside its deepest row
+            # by using the column that minimax algorithm returned (the best col to place a piece in it)
+            elif isValidCol(board, col):
+                pygame.time.wait(700)
+                row = findDeepestRow(board, col)
+                placeTiles(board, row, col, AI_MARK)
+
+                # after placing the piece we check if the ai_agent win or not
+                if isWinning(board, AI_MARK):
+                    label = myfont.render("AGENT 2 WINS", 1, YELLOW)
+                    screen.blit(label, (40, 10))
+                    game_over = True # to stop the game
+
+                printBoard(board)
+                draw_board(board)
+
+                # to change turns between computer and AI agent
+                turn = COMPUTER
+
+        if game_over:
+            pygame.time.wait(3000)
+
+# Function to determine the buttons selection
+def determine_selection(p,t):
+    if(p == "minimax" and t == "easy"):
+        runEasyMinimax()
+    elif(p == "minimax" and t == "difficult"):
+        runDifficultMinimax()
+    elif(p == "alpha-beta" and t == "easy"):
+        runEasyAlphaBetaMinimax()
+    elif(p == "alpha-beta" and t == "difficult"):
+        runDifficultAlphaBetaMinimax()
 
 # GUI
+# Window 1
 root = Tk()
-root.title("Connect-4")
+root.title("CONNECT-4")
 root.minsize(400, 300)
-label1 = Label(text="Choose level of difficulty:", font=("Calibri bold", "15"))
-label1.pack()
-button3 = Button(text="Difficult")
-border = LabelFrame(root, bd=6, bg="Dark Green")
-border.pack(pady=10)
-button1 = Button(border, text="Easy", font=("Calibri bold", "10"),
-                 width=30, bg="#6CD400", fg="black", command=runEasy)
-button1.grid(padx=(0, 0), pady=(200, 0))
-button2 = Button(border, text="Regular", font=("Calibri bold", "10"), width=30, bg="#6CD400", fg="black",
-                 command=runRegular)
-button1.pack()
-button2.pack()
 
+def first_window():
+    
+    # Window 2
+    def second_window(p):
+        label1.destroy()
+        button_border1.destroy()
+        minimax_button.destroy()
+        button_border2.destroy()
+        alphaBeta_button.destroy()
+
+        # Label 2
+        label2 = Label(root, text="   Choose level of difficulty   ", font=("Calibri bold", "15"),pady= 3)
+        label2.pack()
+
+        
+        # Easy Button
+        button_border3 = LabelFrame(root, highlightbackground = "black", highlightthickness = 3, bd=0)
+        button_border3.pack(pady= 10)
+        easy_button = Button(button_border3, text="Easy", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command=lambda t = "easy":determine_selection(p,t))
+        easy_button.pack()
+
+        # Difficult Button
+        button_border4 = LabelFrame(root, highlightbackground = "black", highlightthickness = 3, bd=0)
+        button_border4.pack(pady= 10)
+        difficult_button = Button(button_border4, text="Difficult", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command=lambda t = "difficult": determine_selection(p,t))
+        difficult_button.pack()
+
+        #Back Button
+        def back():
+            label2.destroy()
+            button_border3.destroy()
+            easy_button.destroy()
+            button_border4.destroy()
+            difficult_button.destroy()
+            button_border5.destroy()
+            back_button.destroy()
+            first_window()
+        button_border5 = LabelFrame(root, highlightbackground = "black", highlightthickness = 3, bd=0)
+        button_border5.pack(pady= 10)
+        back_button = Button(button_border5, text="Back", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command=back)
+        back_button.pack()
+
+    # Label 1
+    label1 = Label(root, text="   Choose the algorithm   ", font=("Calibri bold", "15"),pady= 3)
+    label1.pack()
+
+    # Minimax Button
+    button_border1 = LabelFrame(root, highlightbackground = "black", highlightthickness = 3, bd=0)
+    button_border1.pack(pady=20)
+    minimax_button = Button(button_border1, text="Minimax", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command= lambda p = "minimax":second_window(p))
+    minimax_button.pack()
+
+    # Alpha Beta Button
+    button_border2 = LabelFrame(root, highlightbackground = "black", highlightthickness = 3, bd=0)
+    button_border2.pack()
+    alphaBeta_button = Button(button_border2, text="Alpha-Beta", font=("Calibri bold", "12"), width=25, fg="black", bg="light blue", command=lambda p = "alpha-beta": second_window(p))
+    alphaBeta_button.pack()
+first_window()
 
 # boolean function to loop over the board and check if it's full or not
 def BoardFull(board):
